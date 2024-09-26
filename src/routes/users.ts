@@ -12,7 +12,7 @@ const userValidationRules = [
     body('is_active').optional().isBoolean().withMessage('Is active must be set to True or False'),
 ];
 
-// Create a bank account
+// Create a user account
 router.post('/', userValidationRules, (req: Request, res: Response) => {
     const errors = validationResult(req);
 

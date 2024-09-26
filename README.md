@@ -36,3 +36,6 @@ In no particular order:
 
 ## Resources:
 Server application code based on: [typescript nodejs tutorial](https://dev.to/wizdomtek/typescript-express-building-robust-apis-with-nodejs-1fln).
+
+Chrome extensions:
+  - [Talend API Tester - Free Edition](https://chromewebstore.google.com/detail/talend-api-tester-free-ed/aejoelaoggembcahagimdiliamlcdmfm)
