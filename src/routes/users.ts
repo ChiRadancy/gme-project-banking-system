@@ -106,7 +106,7 @@ router.put('/:id', userValidationRules, (req: Request, res: Response) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const user = usersList.find((t) => t.id === parseInt(req.params.id));
+    const user = usersList.find((u) => u.id === parseInt(req.params.id));
 
     if (!user) {
         res.status(404).send('user not found');
