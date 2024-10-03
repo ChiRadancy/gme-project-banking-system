@@ -1,11 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express';
 import userRoutes from './routes/users';
+import accountRoutes from './routes/bank_accounts';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use('/user', userRoutes);
+app.use('/account', accountRoutes);
+
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, Manage your accounts!');
 });
