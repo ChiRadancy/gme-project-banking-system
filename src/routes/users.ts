@@ -73,7 +73,7 @@ router.put('/:id', userValidationRules, (req: Request, res: Response) => {
 
 // Delete User
 router.delete('/:id', (req: Request, res: Response) => {
-    const index = usersList.findIndex((t) => t.id === parseInt(req.params.id));
+    const index = usersList.findIndex((u) => u.id === parseInt(req.params.id));
 
     if (index === -1) {
         res.status(404).send('User not found');
