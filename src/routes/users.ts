@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import { User } from '../models/users';
 
 const router = Router();
-let usersList: User[] = [];
+export let usersList: User[] = [];
 
 const userValidationRules = [
     body('user_name').notEmpty().withMessage('User name is required'),
