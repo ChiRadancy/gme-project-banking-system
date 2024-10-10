@@ -42,13 +42,8 @@ router.post('/', accountValidationRules, (req: Request, res: Response) => {
     }
 });
 
-// Get all bankAccounts
-router.get('/', (req: Request, res: Response) => {
-    res.json(bankAccounts);
-});
-
 // Remove all existing bank accounts and populate with demo data
-router.get('/reset-accounts', (req: Request, res: Response) => {
+router.post('/reset-accounts', (req: Request, res: Response) => {
     // Remove all existing account data
     bankAccounts.splice(0);
 
@@ -104,6 +99,11 @@ router.get('/reset-accounts', (req: Request, res: Response) => {
     });
 
     console.log('Reset accounts');
+    res.json(bankAccounts);
+});
+
+// Get all bankAccounts
+router.get('/', (req: Request, res: Response) => {
     res.json(bankAccounts);
 });
 
