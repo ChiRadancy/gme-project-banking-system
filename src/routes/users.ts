@@ -32,13 +32,8 @@ router.post('/', userValidationRules, (req: Request, res: Response) => {
     res.status(201).json(user)
 });
 
-// Get all usersList
-router.get('/', (req: Request, res: Response) => {
-    res.json(usersList);
-});
-
 // Remove existing User list and populate with demo data
-router.get('/reset-users', (req: Request, res: Response) => {
+router.post('/reset-users', (req: Request, res: Response) => {
     // Remove all previous user data - bank accounts will also need to be removed
     usersList.splice(0);
 
@@ -83,7 +78,13 @@ router.get('/reset-users', (req: Request, res: Response) => {
         is_active: true,
     });
 
+    console.log('Reset users');
     // Return list of demo users
+    res.json(usersList);
+});
+
+// Get all usersList
+router.get('/', (req: Request, res: Response) => {
     res.json(usersList);
 });
 
