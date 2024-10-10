@@ -122,9 +122,13 @@ router.get('/:id', (req: Request, res: Response) => {
 
 // Update an existing account
 router.put('/:id', accountValidationRules, (req: Request, res: Response) => {
+    console.log(`Update existing account`);
+    console.log(`Method: PUT`);
+    
     const errors = validationResult(req);
-
+    
     if (!errors.isEmpty()) {
+        console.log(`Error: invalid data sent`);
         return res.status(400).json({ errors: errors.array() });
     }
 
@@ -137,12 +141,37 @@ router.put('/:id', accountValidationRules, (req: Request, res: Response) => {
     const account = bankAccounts.find((t) => t.id === parseInt(req.params.id));
 
     if (!account) {
-        res.status(404).send('account not found');
+        console.log(`Error: account doesn't exist`);
+        return res.status(404).send('account not found');
     } else {
+        
+        // Account balance rule checks
+
+        // Rule: A user cannot deposit more than 10,000z in a single transaction.
+        if (req.body.balance > (account.balance + 10000.00)) {
+            console.log(`Unable to process request: Cannot deposit more than 10,000z in a single transaction. Requested: ${req.body.balance} Balance: ${account.balance}`);
+            return res.status(400).send('Unable to process request: Cannot deposit more than 10,000z in a single transaction.');
+        }
+
+        // Rule: An account cannot have less than 100z at any time in an account.
+        if (req.body.balance < 100.00) {
+            console.log(`Unable to process request: Remaining balance is less than 100.00z. Requested: ${req.body.balance} Balance: ${account.balance}`);
+            return res.status(400).send('Unable to process request: Minimum remaining balance of 100.00z is required after a withdrawal.');
+        }
+
+        // Rule: A user cannot withdraw more than 90% of their total balance from an account in a single transaction.
+        if (req.body.balance < (account.balance * 0.1)) {
+            console.log(`Unable to process request: Withdrawing more than 90% of total balance. Requested: ${req.body.balance} Balance: ${account.balance}`);
+            return res.status(400).send('Unable to process request: Cannot withdraw more than 90% of total balance.');
+        }
+
+        // Passed checks, go ahead and update account
+        console.log(`Passed validation and checks.`);
         account.account_name = req.body.account_name || account.account_name;
         account.description = req.body.description || account.description;
         account.balance = req.body.balance || account.balance;
 
+        console.log(`New account details: ${account}`);
         res.json(account);
     }
 
