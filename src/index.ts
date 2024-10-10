@@ -6,8 +6,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use('/user', userRoutes);
-app.use('/account', accountRoutes);
+app.use('/users', userRoutes);
+app.use('/accounts', accountRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello, Manage your accounts!');
