@@ -103,6 +103,7 @@ router.get('/reset-accounts', (req: Request, res: Response) => {
         owner: 5,
     });
 
+    console.log('Reset accounts');
     res.json(bankAccounts);
 });
 
@@ -111,8 +112,10 @@ router.get('/:id', (req: Request, res: Response) => {
     const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
 
     if (!account) {
+        console.log(`Account doesn't exist`);
         res.status(404).send('account not found');
     } else {
+        console.log(`account created:`, account);
         res.json(account);
     }
 });
