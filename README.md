@@ -34,6 +34,12 @@ In no particular order:
   - Create User
   - Delete User
 
+## Quick start
+After cloning the repo into your local folder, install dependencies using 'npm i' in your command line. 
+
+To run the project, use 'npm start' in your command line and navigate to http://localhost:3000 in your browser.
+
+
 ## Resources:
 Server application code based on: [typescript nodejs tutorial](https://dev.to/wizdomtek/typescript-express-building-robust-apis-with-nodejs-1fln).
 
