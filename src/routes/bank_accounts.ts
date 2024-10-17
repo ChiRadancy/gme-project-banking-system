@@ -1,192 +1,24 @@
-import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import { usersList } from './users';
-import { BankAccount } from '../models/bank_accounts';
+import Router from 'express';
 
 const router = Router();
-let bankAccounts: BankAccount[] = [];
-
-const accountValidationRules = [
-    body('account_name').notEmpty().withMessage('Account name is required'),
-    body('description').notEmpty().withMessage('Description is required'),
-    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
-    body('owner').notEmpty().isInt({min: 1}).withMessage('Owner ID is required and has to be greater than 0.'),
-];
+const bank_accounts_controller = require('../controllers/bank_accounts');
 
 // Create a bank account
-router.post('/', accountValidationRules, (req: Request, res: Response) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    let balanceToFloat : any = (Math.round(parseFloat(req.body.balance) * 100) / 100).toFixed(2);
-
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.body.owner));
-
-    if (!accountOwner) {
-        res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
-    } else {
-
-        const account: BankAccount = {
-            id: bankAccounts.length + 1,
-            account_name: req.body.account_name,
-            description: req.body.description,
-            balance: balanceToFloat,
-            owner: accountOwner.id
-        };
-        
-        bankAccounts.push(account);
-        res.status(201).json(account)
-    }
-});
+router.post('/', bank_accounts_controller.bank_accounts_create_post);
 
 // Remove all existing bank accounts and populate with demo data
-router.post('/reset-accounts', (req: Request, res: Response) => {
-    // Remove all existing account data
-    bankAccounts.splice(0);
-
-    // Populate bank accounts list with demo data
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Travel funds",
-        description: "Funds for future travels and events.",
-        balance: 500.00,
-        owner: 1,
-    });
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Car collection",
-        description: "Money pot for car collection.",
-        balance: 8750.00,
-        owner: 1,
-    });
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Savings account",
-        description: "Funds for cool events.",
-        balance: 110.00,
-        owner: 2,
-    });
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Book collection",
-        description: "Library collection.",
-        balance: 231.26,
-        owner: 3,
-    });
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Account no. 98",
-        description: "Duplicate account - keep maxing bank liability limit.",
-        balance: 10000.00,
-        owner: 4,
-    });
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Account no. 99",
-        description: "Duplicate account - keep maxing bank liability limit.",
-        balance: 9876.66,
-        owner: 4,
-    });
-    bankAccounts.push({
-        id: bankAccounts.length + 1,
-        account_name: "Travel funds",
-        description: "Funds for future travels and events.",
-        balance: 768.35,
-        owner: 5,
-    });
-
-    console.log('Reset accounts');
-    res.json(bankAccounts);
-});
+router.post('/reset-accounts', bank_accounts_controller.bank_accounts_reset_post);
 
 // Get all bankAccounts
-router.get('/', (req: Request, res: Response) => {
-    res.json(bankAccounts);
-});
+router.get('/', bank_accounts_controller.bank_accounts_list_get);
 
 // Get a single account
-router.get('/:id', (req: Request, res: Response) => {
-    const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
-
-    if (!account) {
-        console.log(`Account doesn't exist`);
-        res.status(404).send('account not found');
-    } else {
-        console.log(`account created:`, account);
-        res.json(account);
-    }
-});
+router.get('/:id', bank_accounts_controller.bank_accounts_detail_get);
 
 // Update an existing account
-router.put('/:id', accountValidationRules, (req: Request, res: Response) => {
-    console.log(`Update existing account`);
-    console.log(`Method: PUT`);
-    
-    const errors = validationResult(req);
-    
-    if (!errors.isEmpty()) {
-        console.log(`Error: invalid data sent`);
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.body.owner));
-
-    if (!accountOwner) {
-        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
-    }
-
-    const account = bankAccounts.find((t) => t.id === parseInt(req.params.id));
-
-    if (!account) {
-        console.log(`Error: account doesn't exist`);
-        return res.status(404).send('account not found');
-    } else {
-        
-        // Account balance rule checks
-
-        // Rule: A user cannot deposit more than 10,000z in a single transaction.
-        if (req.body.balance > (account.balance + 10000.00)) {
-            console.log(`Unable to process request: Cannot deposit more than 10,000z in a single transaction. Requested: ${req.body.balance} Balance: ${account.balance}`);
-            return res.status(400).send('Unable to process request: Cannot deposit more than 10,000z in a single transaction.');
-        }
-
-        // Rule: An account cannot have less than 100z at any time in an account.
-        if (req.body.balance < 100.00) {
-            console.log(`Unable to process request: Remaining balance is less than 100.00z. Requested: ${req.body.balance} Balance: ${account.balance}`);
-            return res.status(400).send('Unable to process request: Minimum remaining balance of 100.00z is required after a withdrawal.');
-        }
-
-        // Rule: A user cannot withdraw more than 90% of their total balance from an account in a single transaction.
-        if (req.body.balance < (account.balance * 0.1)) {
-            console.log(`Unable to process request: Withdrawing more than 90% of total balance. Requested: ${req.body.balance} Balance: ${account.balance}`);
-            return res.status(400).send('Unable to process request: Cannot withdraw more than 90% of total balance.');
-        }
-
-        // Passed checks, go ahead and update account
-        console.log(`Passed validation and checks.`);
-        account.account_name = req.body.account_name || account.account_name;
-        account.description = req.body.description || account.description;
-        account.balance = req.body.balance || account.balance;
-
-        console.log(`New account details: ${account}`);
-        res.json(account);
-    }
-
-});
+router.put('/:id', bank_accounts_controller.bank_accounts_update_put);
 
 // Delete account
-router.delete('/:id', (req: Request, res: Response) => {
-    const index = bankAccounts.findIndex((t) => t.id === parseInt(req.params.id));
-
-    if (index === -1) {
-        res.status(404).send('account not found');
-    } else {
-        bankAccounts.splice(index, 1);
-        res.status(204).send();
-    }
-});
+router.delete('/:id', bank_accounts_controller.bank_accounts_remove_delete);
 
 export default router;
