@@ -95,7 +95,7 @@ exports.users_list_get = asyncHandler(async (req: Request, res: Response) => {
 
 // Get a single user
 exports.users_detail_get = asyncHandler(async (req: Request, res: Response) => {
-    const user = usersList.find((t) => t.id === parseInt(req.params.id));
+    const user = usersList.find((t) => t.id === parseInt(req.params.user_id));
 
     if (!user) {
         res.status(404).send('User not found');
@@ -112,7 +112,7 @@ exports.users_update_put = asyncHandler(async (req: Request, res: Response) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const user = usersList.find((u) => u.id === parseInt(req.params.id));
+    const user = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
     if (!user) {
         res.status(404).send('user not found');
@@ -129,7 +129,7 @@ exports.users_update_put = asyncHandler(async (req: Request, res: Response) => {
 
 // Delete User
 exports.users_remove_delete = asyncHandler(async (req: Request, res: Response) => {
-    const index = usersList.findIndex((u) => u.id === parseInt(req.params.id));
+    const index = usersList.findIndex((u) => u.id === parseInt(req.params.user_id));
 
     if (index === -1) {
         res.status(404).send('User not found');
