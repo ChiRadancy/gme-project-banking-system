@@ -11,7 +11,7 @@ const accountValidationRules = [
     body('account_name').notEmpty().withMessage('Account name is required'),
     body('description').notEmpty().withMessage('Description is required'),
     body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
-    body('owner').notEmpty().isInt({min: 1}).withMessage('Owner ID is required and has to be greater than 0.'),
+    body('owner').isInt({min: 1}).withMessage('Owner ID is required and has to be greater than 0.'),
 ];
 
 // Create a bank account
@@ -33,7 +33,7 @@ exports.bank_accounts_create_post = [
         if (!accountOwner) {
             return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
         } else {
-            const balanceToFloat: any = (Math.round(parseFloat(req.body.balance) * 100) / 100).toFixed(2);
+            const balanceToFloat: any = (Math.round(parseFloat(req.body.balance) * 100) / 100);
             
             const account: BankAccount = {
                 id: bankAccounts.length + 1,
