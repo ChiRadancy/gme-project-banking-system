@@ -117,10 +117,12 @@ exports.users_update_put = asyncHandler(async (req: Request, res: Response) => {
     if (!user) {
         res.status(404).send('user not found');
     } else {
+        const isUserActive = req.body.is_active.length !== 0 ? req.body.is_active : user.is_active;
+
         user.user_name = req.body.user_name || user.user_name;
         user.first_name = req.body.first_name || user.first_name;
         user.family_name = req.body.family_name || user.family_name;
-        user.is_active = req.body.is_active || user.is_active
+        user.is_active = isUserActive;
 
         res.json(user);
     }
