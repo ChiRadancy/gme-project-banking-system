@@ -188,7 +188,7 @@ exports.bank_accounts_update_put = [
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const accountOwner = usersList.find((u) => u.id === parseInt(req.body.owner));
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
         if (!accountOwner) {
             return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
@@ -199,6 +199,11 @@ exports.bank_accounts_update_put = [
         if (!account) {
             console.log(`Error: account doesn't exist`);
             return res.status(404).send('account not found');
+
+        } else if (accountOwner.id !== account.owner) {
+            console.log(`Accound does not belong to this user`);
+            return res.status(400).send('Error: something went wrong!');
+    
         } else {
             
             // Account balance rule checks
