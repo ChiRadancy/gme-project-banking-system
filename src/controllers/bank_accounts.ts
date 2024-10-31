@@ -128,9 +128,22 @@ exports.bank_accounts_reset_post = asyncHandler(async (req: Request, res: Respon
     res.json(bankAccounts);
 });
 
-// Get all bankAccounts
-exports.bank_accounts_list_get = asyncHandler(async (req: Request, res: Response) => {
+// Get all bankAccounts - Demo use ONLY
+exports.bank_accounts_demo_list_get = asyncHandler(async (req: Request, res: Response) => {
     res.json(bankAccounts);
+});
+
+// Get users bankAccounts
+exports.bank_accounts_list_get = asyncHandler(async (req: Request, res: Response) => {
+    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+
+    if (!accountOwner) {
+        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+    }
+
+    const userBankAccounts = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
+
+    res.json(userBankAccounts);
 });
 
 // Get a single account

@@ -29,7 +29,10 @@ router.post('/reset-accounts', bank_accounts_controller.bank_accounts_reset_post
 // Create a bank account
 router.post('/users/:user_id/accounts', bank_accounts_controller.bank_accounts_create_post);
 
-// Get all bankAccounts
+// Get all bankAccounts - For testing and debugging purposes ONLY
+router.get('/accounts', bank_accounts_controller.bank_accounts_demo_list_get);
+
+// Get all bankAccounts for a user
 router.get('/users/:user_id/accounts', bank_accounts_controller.bank_accounts_list_get);
 
 // Get a single account
