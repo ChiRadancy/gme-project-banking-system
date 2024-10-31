@@ -69,6 +69,13 @@ exports.bank_accounts_reset_post = asyncHandler(async (req: Request, res: Respon
     });
     bankAccounts.push({
         id: bankAccounts.length + 1,
+        account_name: "Future savings",
+        description: "Savings for future plans",
+        balance: 5750.00,
+        owner: 1,
+    });
+    bankAccounts.push({
+        id: bankAccounts.length + 1,
         account_name: "Savings account",
         description: "Funds for cool events.",
         balance: 110.00,
@@ -80,6 +87,20 @@ exports.bank_accounts_reset_post = asyncHandler(async (req: Request, res: Respon
         description: "Library collection.",
         balance: 231.26,
         owner: 3,
+    });
+    bankAccounts.push({
+        id: bankAccounts.length + 1,
+        account_name: "Account no. 96",
+        description: "Duplicate account - keep maxing bank liability limit.",
+        balance: 10000.00,
+        owner: 4,
+    });
+    bankAccounts.push({
+        id: bankAccounts.length + 1,
+        account_name: "Account no. 97",
+        description: "Duplicate account - keep maxing bank liability limit.",
+        balance: 10000.00,
+        owner: 4,
     });
     bankAccounts.push({
         id: bankAccounts.length + 1,
