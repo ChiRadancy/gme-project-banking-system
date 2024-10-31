@@ -88,7 +88,7 @@ exports.users_reset_post = asyncHandler(async (req: Request, res: Response) => {
 });
 
 
-// Get all usersList
+// Get all usersList - Demo use ONLY
 exports.users_list_get = asyncHandler(async (req: Request, res: Response) => {
     res.json(usersList);
 });
