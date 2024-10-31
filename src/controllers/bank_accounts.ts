@@ -151,13 +151,24 @@ exports.bank_accounts_list_get = asyncHandler(async (req: Request, res: Response
 
 // Get a single account
 exports.bank_accounts_detail_get = asyncHandler(async (req: Request, res: Response) => {
+    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+
+    if (!accountOwner) {
+        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+    }
+
     const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
 
     if (!account) {
         console.log(`Account doesn't exist`);
         res.status(404).send('account not found');
+
+    } else if (accountOwner.id !== account.owner) {
+        console.log(`Accound does not belong to this user`);
+        res.status(400).send('Error: something went wrong!');
+
     } else {
-        console.log(`account created:`, account);
+        // No errors - return bank account
         res.json(account);
     }
 });
