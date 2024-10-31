@@ -6,6 +6,7 @@ import { BankAccount } from '../models/bank_accounts';
 const asyncHandler = require("express-async-handler");
 let bankAccounts: BankAccount[] = [];
 
+// Rules for modifying existing bank accounts
 const accountValidationRules = [
     body('account_name').notEmpty().withMessage('Account name is required'),
     body('description').notEmpty().withMessage('Description is required'),
