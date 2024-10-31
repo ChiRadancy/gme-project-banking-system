@@ -16,7 +16,10 @@ const accountValidationRules = [
 
 // Create a bank account
 exports.bank_accounts_create_post = [
-    accountValidationRules,
+    // Validation rules for Bank Account creation
+    body('account_name').notEmpty().withMessage('Account name is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
 
     asyncHandler(async (req: Request, res: Response) => {
         const errors = validationResult(req);
@@ -24,15 +27,14 @@ exports.bank_accounts_create_post = [
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-    
-        let balanceToFloat : any = (Math.round(parseFloat(req.body.balance) * 100) / 100).toFixed(2);
-    
-        const accountOwner = usersList.find((u) => u.id === parseInt(req.body.owner));
-    
+        
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+        
         if (!accountOwner) {
-            res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
         } else {
-    
+            const balanceToFloat: any = (Math.round(parseFloat(req.body.balance) * 100) / 100).toFixed(2);
+            
             const account: BankAccount = {
                 id: bankAccounts.length + 1,
                 account_name: req.body.account_name,
