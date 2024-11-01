@@ -177,6 +177,72 @@ exports.bank_accounts_update_put = [
     }),
 ];
 
+// Deposit money into an existing account
+exports.bank_accounts_deposit_put = [
+    accountValidationRules,
+    
+    asyncHandler(async (req: Request, res: Response) => {
+        console.log(`Update existing account`);
+        console.log(`Method: PUT`);
+        
+        const errors = validationResult(req);
+        
+        if (!errors.isEmpty()) {
+            console.log(`Error: invalid data sent`);
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+
+        if (!accountOwner) {
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+            
+        } else if( !accountOwner.is_active ) {
+            console.log('Account is not active');
+            return res.status(403).send('This account is not active, please contact us.');
+        }
+
+        const account = bankAccounts.find((t) => t.id === parseInt(req.params.id));
+
+        if (!account) {
+            console.log(`Error: account doesn't exist`);
+            return res.status(404).send('account not found');
+
+        } else if (accountOwner.id !== account.owner) {
+            console.log(`Accound does not belong to this user`);
+            return res.status(400).send('Error: something went wrong!');
+    
+        } else {
+            // Account balance rule checks
+
+            // Rule: A user cannot deposit more than 10,000z in a single transaction.
+            if (req.body.balance > (account.balance + 10000.00)) {
+                console.log(`Unable to process request: Cannot deposit more than 10,000z in a single transaction. Requested: ${req.body.balance} Balance: ${account.balance}`);
+                return res.status(400).send('Unable to process request: Cannot deposit more than 10,000z in a single transaction.');
+            }
+
+            // Rule: An account cannot have less than 100z at any time in an account.
+            if (req.body.balance < 100.00) {
+                console.log(`Unable to process request: Remaining balance is less than 100.00z. Requested: ${req.body.balance} Balance: ${account.balance}`);
+                return res.status(400).send('Unable to process request: Minimum remaining balance of 100.00z is required after a withdrawal.');
+            }
+
+            // Rule: A user cannot withdraw more than 90% of their total balance from an account in a single transaction.
+            if (req.body.balance < (account.balance * 0.1)) {
+                console.log(`Unable to process request: Withdrawing more than 90% of total balance. Requested: ${req.body.balance} Balance: ${account.balance}`);
+                return res.status(400).send('Unable to process request: Cannot withdraw more than 90% of total balance.');
+            }
+
+            // Passed checks, go ahead and update account
+            console.log(`Passed validation and checks.`);
+            account.balance = req.body.balance || account.balance;
+
+            console.log(`New account details: ${account}`);
+            res.json(account);
+        }
+    }),
+];
+
 // Delete account
 exports.bank_accounts_remove_delete = asyncHandler(async (req: Request, res: Response) => {
 
