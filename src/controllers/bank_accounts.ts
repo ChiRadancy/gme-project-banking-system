@@ -32,6 +32,9 @@ exports.bank_accounts_create_post = [
         
         if (!accountOwner) {
             return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+        } else if( !accountOwner.is_active ) {
+            console.log('Account is not active');
+            return res.status(403).send('This account is not active, please contact us.');
         } else {
             const balanceToFloat: any = (Math.round(parseFloat(req.body.balance) * 100) / 100);
             
@@ -192,6 +195,10 @@ exports.bank_accounts_update_put = [
 
         if (!accountOwner) {
             return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+            
+        } else if( !accountOwner.is_active ) {
+            console.log('Account is not active');
+            return res.status(403).send('This account is not active, please contact us.');
         }
 
         const account = bankAccounts.find((t) => t.id === parseInt(req.params.id));
@@ -240,6 +247,17 @@ exports.bank_accounts_update_put = [
 
 // Delete account
 exports.bank_accounts_remove_delete = asyncHandler(async (req: Request, res: Response) => {
+
+    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+
+    if (!accountOwner) {
+        return res.status(422).send('User not found: Unable to complete request.');
+        
+    } else if( !accountOwner.is_active ) {
+        console.log('Account is not active');
+        return res.status(403).send('This account is not active: Unable to complete requeest.');
+    }
+
     const index = bankAccounts.findIndex((t) => t.id === parseInt(req.params.id));
 
     if (index === -1) {
