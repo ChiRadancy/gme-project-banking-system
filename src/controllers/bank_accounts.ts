@@ -147,7 +147,7 @@ exports.bank_accounts_list_get = asyncHandler(async (req: Request, res: Response
         return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
     }
 
-    const userBankAccounts = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
+    const userBankAccounts:BankAccount[] = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
 
     res.json(userBankAccounts);
 });
