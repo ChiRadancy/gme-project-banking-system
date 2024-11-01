@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { User } from '../models/users';
+import { populateDemoUsers } from './demo-functions/demo-users';
 
 const asyncHandler = require("express-async-handler");
 export let usersList: User[] = [];
@@ -42,45 +43,7 @@ exports.users_reset_post = asyncHandler(async (req: Request, res: Response) => {
     usersList.splice(0);
 
     // Populate with demo data
-    usersList.push({
-        id: usersList.length + 1,
-        user_name: 'first_User',
-        first_name: 'Scott',
-        family_name: 'Summers',
-        is_active: true,
-    });
-
-    usersList.push({
-        id: usersList.length + 1,
-        user_name: 'second_User',
-        first_name: 'Robert',
-        family_name: 'Drake',
-        is_active: true,
-    });
-
-    usersList.push({
-        id: usersList.length + 1,
-        user_name: 'third_User',
-        first_name: 'Henry',
-        family_name: 'McCoy',
-        is_active: true,
-    });
-
-    usersList.push({
-        id: usersList.length + 1,
-        user_name: 'fourth_User',
-        first_name: 'Warren',
-        family_name: 'Worthington',
-        is_active: true,
-    });
-
-    usersList.push({
-        id: usersList.length + 1,
-        user_name: 'fifth_User',
-        first_name: 'Jean',
-        family_name: 'Grey',
-        is_active: true,
-    });
+    populateDemoUsers(usersList);
 
     console.log('Reset users');
     // Return list of demo users
