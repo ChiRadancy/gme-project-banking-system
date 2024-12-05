@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { usersList } from './users';
 import { BankAccount } from '../models/bank_accounts';
 import { populateDemoBankAccounts } from './demo-functions/demo-bank-accounts';
@@ -9,6 +9,7 @@ let bankAccounts: BankAccount[] = [];
 
 // Rules for modifying existing bank accounts
 const accountValidationRules = [
+    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
     body('account_name').notEmpty().withMessage('Account name is required'),
     body('description').notEmpty().withMessage('Description is required'),
     body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
@@ -18,6 +19,7 @@ const accountValidationRules = [
 // Create a bank account
 exports.bank_accounts_create_post = [
     // Validation rules for Bank Account creation
+    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
     body('account_name').notEmpty().withMessage('Account name is required'),
     body('description').notEmpty().withMessage('Description is required'),
     body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
@@ -179,7 +181,9 @@ exports.bank_accounts_update_put = [
 
 // Deposit money into an existing account
 exports.bank_accounts_deposit_put = [
-    accountValidationRules,
+    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
+    param('id').notEmpty().isInt().withMessage('Not a valid bank account id'),
+    body('deposit').notEmpty().isFloat({min: 1.00, max: 10000.00}).withMessage('Minimum deposit amount is 1.00z and the maximum amount is 10,000.00z'),
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Update existing account`);
