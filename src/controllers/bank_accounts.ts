@@ -75,7 +75,8 @@ exports.bank_accounts_demo_list_get = asyncHandler(async (req: Request, res: Res
 
 // Get all bank accounts tied to single user
 exports.bank_accounts_list_get = [
-    accountValidationRules,
+    // Only need to validate the User ID
+    param('user_id').notEmpty().isInt({min: 0}).withMessage('Not a valid user id'),
 
     asyncHandler(async (req: Request, res: Response) => {
         const errors = validationResult(req);
