@@ -228,25 +228,37 @@ exports.bank_accounts_deposit_put = [
     }),
 ];
 
-// Delete account
-exports.bank_accounts_remove_delete = asyncHandler(async (req: Request, res: Response) => {
+// Delete bank account
+exports.bank_accounts_remove_delete = [
+    accountValidationRules,
 
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+    asyncHandler(async (req: Request, res: Response) => {
 
-    if (!accountOwner) {
-        return res.status(422).send('User not found: Unable to complete request.');
+        const errors = validationResult(req);
         
-    } else if( !accountOwner.is_active ) {
-        console.log('Account is not active');
-        return res.status(403).send('This account is not active: Unable to complete requeest.');
-    }
+        if (!errors.isEmpty()) {
+            console.log(`Error: invalid data sent`);
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-    const index = bankAccounts.findIndex((t) => t.id === parseInt(req.params.id));
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
-    if (index === -1) {
-        res.status(404).send('account not found');
-    } else {
-        bankAccounts.splice(index, 1);
-        res.status(204).send();
-    }
-});
+        if (!accountOwner) {
+            console.log('User account not found');
+            return res.status(422).send('User not found: Unable to complete request.');
+            
+        } else if( !accountOwner.is_active ) {
+            console.log('User account is not active');
+            return res.status(403).send('This account is not active: Unable to complete requeest.');
+        }
+
+        const index = bankAccounts.findIndex((t) => t.id === parseInt(req.params.id));
+
+        if (index === -1) {
+            res.status(404).send('account not found');
+        } else {
+            bankAccounts.splice(index, 1);
+            res.status(204).send();
+        }
+    }),
+];
