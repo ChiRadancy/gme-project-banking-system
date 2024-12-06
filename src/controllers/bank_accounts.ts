@@ -135,6 +135,7 @@ exports.bank_accounts_update_put = [
         const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
         if (!accountOwner) {
+            console.log('User account not found');
             return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
             
         } else if( !accountOwner.is_active ) {
@@ -157,7 +158,7 @@ exports.bank_accounts_update_put = [
             // Account balance rule checks
 
             // Rule: A user cannot deposit more than 10,000z in a single transaction.
-            if (req.body.balance > (account.balance + 10000.00)) {
+            if (req.body.balance > (account.balance + maxSingleAmount)) {
                 console.log(`Unable to process request: Cannot deposit more than 10,000z in a single transaction. Requested: ${req.body.balance} Balance: ${account.balance}`);
                 return res.status(400).send('Unable to process request: Cannot deposit more than 10,000z in a single transaction.');
             }
