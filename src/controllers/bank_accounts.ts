@@ -12,11 +12,8 @@ const maxSingleAmount = 10_000.00;
 
 // Validation rules for bank accounts
 const accountValidationRules = [
-    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
-    body('account_name').notEmpty().withMessage('Account name is required'),
-    body('description').notEmpty().withMessage('Description is required'),
-    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
-    body('owner').isInt({min: 1}).withMessage('Owner ID is required and has to be greater than 0.'),
+    param('user_id').notEmpty().isInt({min: 0}).withMessage('Not a valid user id'),
+    param('id').isInt({min: 0}).withMessage('Not a valid bank account id'),
 ];
 
 // Create a bank account
