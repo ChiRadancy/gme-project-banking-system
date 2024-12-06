@@ -119,6 +119,7 @@ exports.bank_accounts_update_put = [
 
     // Maximum amount removed because account could've accummulated a balance higher than allowed single transaction amount.
     body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a minimum 100.00z.'),
+    // "owner" field is omitted as this can never change.
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Update existing account`);
@@ -178,6 +179,7 @@ exports.bank_accounts_update_put = [
             account.account_name = req.body.account_name || account.account_name;
             account.description = req.body.description || account.description;
             account.balance = req.body.balance || account.balance;
+            // "owner" field is omitted as this can never change.
 
             console.log(`New account details: ${account}`);
             res.json(account);
