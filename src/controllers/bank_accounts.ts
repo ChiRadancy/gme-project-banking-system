@@ -179,11 +179,10 @@ exports.bank_accounts_update_put = [
     }),
 ];
 
-// Deposit money into an existing account
+// Deposit money into an existing bank account
 exports.bank_accounts_deposit_put = [
-    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
-    param('id').notEmpty().isInt().withMessage('Not a valid bank account id'),
-    body('deposit').notEmpty().isFloat({min: 1.00, max: 10000.00}).withMessage('Minimum deposit amount is 1.00z and the maximum amount is 10,000.00z'),
+    accountValidationRules,
+    body('deposit').notEmpty().isFloat({min: 1.00, max: maxSingleAmount}).withMessage('Minimum deposit amount is 1.00z and the maximum amount is 10,000.00z'),
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Update existing account`);
