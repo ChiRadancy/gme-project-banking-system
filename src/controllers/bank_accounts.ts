@@ -112,7 +112,13 @@ exports.bank_accounts_detail_get = asyncHandler(async (req: Request, res: Respon
 
 // Update an existing bank account
 exports.bank_accounts_update_put = [
+    // Validation rules for updating an existing account
     accountValidationRules,
+    body('account_name').notEmpty().withMessage('Account name is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+
+    // Maximum amount removed because account could've accummulated a balance higher than allowed single transaction amount.
+    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a minimum 100.00z.'),
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Update existing account`);
