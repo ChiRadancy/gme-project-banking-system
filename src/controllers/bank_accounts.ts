@@ -228,6 +228,74 @@ exports.bank_accounts_deposit_put = [
     }),
 ];
 
+// Withdraw money from an existing account
+exports.bank_accounts_withdraw_put = [
+    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
+    param('id').notEmpty().isInt().withMessage('Not a valid bank account id'),
+    body('withdraw').notEmpty().isFloat({min: 1.00}).withMessage('Minimum withdrawal amount is 1.00z.'),
+    
+    asyncHandler(async (req: Request, res: Response) => {
+        console.log(`Withdraw from existing account`);
+        console.log(`Method: PUT`);
+        
+        const errors = validationResult(req);
+        
+        if (!errors.isEmpty()) {
+            console.log(`Error: invalid data sent`);
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+        
+        if (!accountOwner) {
+            console.log(`Error: user account doesn't exist`);
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+            
+        } else if( !accountOwner.is_active ) {
+            console.log('User account is not active');
+            return res.status(403).send('This account is not active, please contact us.');
+        }
+
+        const account = bankAccounts.find((t) => t.id === parseInt(req.params.id));
+
+        if (!account) {
+            console.log(`Error: bank account doesn't exist`);
+            return res.status(404).send(' Bank account not found');
+
+        } else if (accountOwner.id !== account.owner) {
+            console.log(`Bank Accound does not belong to this user`);
+            // Generic error message for security purposes - only give enough info.
+            return res.status(400).send('Error: something went wrong!');
+    
+        } else {
+            // Account info passed checks
+
+            // Now check withdrawal request is allowed as per company policy
+            const currentBalance = account.balance;
+            const withdrawalAmount = parseFloat(req.body.withdraw);
+
+            // Check remaining balance is at least 100.00z
+            if ( 100.00 > currentBalance - withdrawalAmount ) {
+                console.log(`Unable to process request: Remaining balance is less than 100.00z. Requested: ${withdrawalAmount} Balance: ${currentBalance}`);
+                return res.status(400).send('Unable to process request: Minimum remaining balance of 100.00z is required after a withdrawal.');
+            }
+
+            // Check withdrawal amount is not more than 90% of their total balance in a single transaction.
+            if (withdrawalAmount > (currentBalance * 0.9)) {
+                console.log(`Unable to process request: Withdrawing more than 90% of total balance. Requested: ${withdrawalAmount} Balance: ${currentBalance}`);
+                return res.status(400).send('Unable to process request: Cannot withdraw more than 90% of total balance.');
+            }
+
+            // Passed checks, go ahead and update account
+            console.log(`Passed validation and checks.`);
+            account.balance -= withdrawalAmount;
+
+            console.log(`New account details: ${account}`);
+            res.json(account);
+        }
+    }),
+];
+
 // Delete account
 exports.bank_accounts_remove_delete = asyncHandler(async (req: Request, res: Response) => {
 

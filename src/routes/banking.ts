@@ -44,6 +44,9 @@ router.put('/users/:user_id/accounts/:id', bank_accounts_controller.bank_account
 // Deposit zeny to an existing account
 router.put('/users/:user_id/accounts/:id/deposit', bank_accounts_controller.bank_accounts_deposit_put);
 
+// Withdraw zeny from an existing account
+router.put('/users/:user_id/accounts/:id/withdraw', bank_accounts_controller.bank_accounts_withdraw_put);
+
 // Delete account
 router.delete('/users/:user_id/accounts/:id', bank_accounts_controller.bank_accounts_remove_delete);
 
