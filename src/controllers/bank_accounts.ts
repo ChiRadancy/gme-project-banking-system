@@ -73,42 +73,66 @@ exports.bank_accounts_demo_list_get = asyncHandler(async (req: Request, res: Res
     res.json(bankAccounts);
 });
 
-// Get users bankAccounts
-exports.bank_accounts_list_get = asyncHandler(async (req: Request, res: Response) => {
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+// Get all bank accounts tied to single user
+exports.bank_accounts_list_get = [
+    accountValidationRules,
 
-    if (!accountOwner) {
-        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
-    }
+    asyncHandler(async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+    
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
-    const userBankAccounts:BankAccount[] = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
+        if (!accountOwner) {
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+        }
 
-    res.json(userBankAccounts);
-});
+        const userBankAccounts:BankAccount[] = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
 
-// Get a single account
-exports.bank_accounts_detail_get = asyncHandler(async (req: Request, res: Response) => {
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+        console.log(`Retrieved bank accounts for account: ${accountOwner.id}`);
+        res.json(userBankAccounts);
+    }),
+];
 
-    if (!accountOwner) {
-        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
-    }
+// Get a single bank account
+exports.bank_accounts_detail_get = [
+    accountValidationRules,
 
-    const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
+    asyncHandler(async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+    
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-    if (!account) {
-        console.log(`Account doesn't exist`);
-        res.status(404).send('account not found');
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
-    } else if (accountOwner.id !== account.owner) {
-        console.log(`Accound does not belong to this user`);
-        res.status(400).send('Error: something went wrong!');
+        if (!accountOwner) {
+            console.log(`Account doesn't exist`);
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+        }
 
-    } else {
-        // No errors - return bank account
-        res.json(account);
-    }
-});
+        const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
+
+        if (!account) {
+            console.log(`Bank account doesn't exist`);
+            res.status(404).send('Bank account not found');
+
+        } else if (accountOwner.id !== account.owner) {
+            // Reason for non specific error message is for security - less information given the better.
+            console.log(`Bank account does not belong to this account holder`);
+            res.status(400).send('Error: something went wrong!');
+            
+        } else {
+            // No errors - return bank account
+            console.log(`Retrieved bank account: ${account.id}`);
+            res.json(account);
+        }
+    }),
+];
 
 // Update an existing bank account
 exports.bank_accounts_update_put = [
