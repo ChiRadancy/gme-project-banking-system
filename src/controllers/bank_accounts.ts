@@ -19,10 +19,10 @@ const accountValidationRules = [
 // Create a bank account
 exports.bank_accounts_create_post = [
     // Validation rules for Bank Account creation
-    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
+    accountValidationRules,
     body('account_name').notEmpty().withMessage('Account name is required'),
     body('description').notEmpty().withMessage('Description is required'),
-    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
+    body('balance').notEmpty().isFloat({min: 100.00, max: maxSingleAmount}).withMessage('Balance must be a minimum 100.00z and a maximum of 10,000.00z'),
 
     asyncHandler(async (req: Request, res: Response) => {
         const errors = validationResult(req);
