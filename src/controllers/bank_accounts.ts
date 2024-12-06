@@ -7,22 +7,22 @@ import { populateDemoBankAccounts } from './demo-functions/demo-bank-accounts';
 const asyncHandler = require("express-async-handler");
 let bankAccounts: BankAccount[] = [];
 
-// Rules for modifying existing bank accounts
+// Maximum amount a user can make in a single transaction transaction
+const maxSingleAmount = 10_000.00;
+
+// Validation rules for bank accounts
 const accountValidationRules = [
-    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
-    body('account_name').notEmpty().withMessage('Account name is required'),
-    body('description').notEmpty().withMessage('Description is required'),
-    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
-    body('owner').isInt({min: 1}).withMessage('Owner ID is required and has to be greater than 0.'),
+    param('user_id').notEmpty().isInt({min: 0}).withMessage('Not a valid user id'),
+    param('id').isInt({min: 0}).withMessage('Not a valid bank account id'),
 ];
 
 // Create a bank account
 exports.bank_accounts_create_post = [
     // Validation rules for Bank Account creation
-    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
+    accountValidationRules,
     body('account_name').notEmpty().withMessage('Account name is required'),
     body('description').notEmpty().withMessage('Description is required'),
-    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a number and at least 100.00'),
+    body('balance').notEmpty().isFloat({min: 100.00, max: maxSingleAmount}).withMessage('Balance must be a minimum 100.00z and a maximum of 10,000.00z'),
 
     asyncHandler(async (req: Request, res: Response) => {
         const errors = validationResult(req);
@@ -73,46 +73,77 @@ exports.bank_accounts_demo_list_get = asyncHandler(async (req: Request, res: Res
     res.json(bankAccounts);
 });
 
-// Get users bankAccounts
-exports.bank_accounts_list_get = asyncHandler(async (req: Request, res: Response) => {
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
-
-    if (!accountOwner) {
-        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
-    }
-
-    const userBankAccounts:BankAccount[] = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
-
-    res.json(userBankAccounts);
-});
-
-// Get a single account
-exports.bank_accounts_detail_get = asyncHandler(async (req: Request, res: Response) => {
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
-
-    if (!accountOwner) {
-        return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
-    }
-
-    const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
-
-    if (!account) {
-        console.log(`Account doesn't exist`);
-        res.status(404).send('account not found');
-
-    } else if (accountOwner.id !== account.owner) {
-        console.log(`Accound does not belong to this user`);
-        res.status(400).send('Error: something went wrong!');
-
-    } else {
-        // No errors - return bank account
-        res.json(account);
-    }
-});
-
-// Update an existing account
-exports.bank_accounts_update_put = [
+// Get all bank accounts tied to single user
+exports.bank_accounts_list_get = [
     accountValidationRules,
+
+    asyncHandler(async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+    
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+
+        if (!accountOwner) {
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+        }
+
+        const userBankAccounts:BankAccount[] = bankAccounts.filter((acc) => acc.owner === accountOwner.id);
+
+        console.log(`Retrieved bank accounts for account: ${accountOwner.id}`);
+        res.json(userBankAccounts);
+    }),
+];
+
+// Get a single bank account
+exports.bank_accounts_detail_get = [
+    accountValidationRules,
+
+    asyncHandler(async (req: Request, res: Response) => {
+        const errors = validationResult(req);
+    
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+
+        if (!accountOwner) {
+            console.log(`Account doesn't exist`);
+            return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
+        }
+
+        const account = bankAccounts.find((u) => u.id === parseInt(req.params.id));
+
+        if (!account) {
+            console.log(`Bank account doesn't exist`);
+            res.status(404).send('Bank account not found');
+
+        } else if (accountOwner.id !== account.owner) {
+            // Reason for non specific error message is for security - less information given the better.
+            console.log(`Bank account does not belong to this account holder`);
+            res.status(400).send('Error: something went wrong!');
+            
+        } else {
+            // No errors - return bank account
+            console.log(`Retrieved bank account: ${account.id}`);
+            res.json(account);
+        }
+    }),
+];
+
+// Update an existing bank account
+exports.bank_accounts_update_put = [
+    // Validation rules for updating an existing account
+    accountValidationRules,
+    body('account_name').notEmpty().withMessage('Account name is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+
+    // Maximum amount removed because account could've accummulated a balance higher than allowed single transaction amount.
+    body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a minimum 100.00z.'),
+    // "owner" field is omitted as this can never change.
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Update existing account`);
@@ -128,6 +159,7 @@ exports.bank_accounts_update_put = [
         const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
         if (!accountOwner) {
+            console.log('User account not found');
             return res.status(422).send('User not found: bank accounts need to be assigned to an existing user.');
             
         } else if( !accountOwner.is_active ) {
@@ -150,7 +182,7 @@ exports.bank_accounts_update_put = [
             // Account balance rule checks
 
             // Rule: A user cannot deposit more than 10,000z in a single transaction.
-            if (req.body.balance > (account.balance + 10000.00)) {
+            if (req.body.balance > (account.balance + maxSingleAmount)) {
                 console.log(`Unable to process request: Cannot deposit more than 10,000z in a single transaction. Requested: ${req.body.balance} Balance: ${account.balance}`);
                 return res.status(400).send('Unable to process request: Cannot deposit more than 10,000z in a single transaction.');
             }
@@ -172,6 +204,7 @@ exports.bank_accounts_update_put = [
             account.account_name = req.body.account_name || account.account_name;
             account.description = req.body.description || account.description;
             account.balance = req.body.balance || account.balance;
+            // "owner" field is omitted as this can never change.
 
             console.log(`New account details: ${account}`);
             res.json(account);
@@ -179,11 +212,10 @@ exports.bank_accounts_update_put = [
     }),
 ];
 
-// Deposit money into an existing account
+// Deposit money into an existing bank account
 exports.bank_accounts_deposit_put = [
-    param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
-    param('id').notEmpty().isInt().withMessage('Not a valid bank account id'),
-    body('deposit').notEmpty().isFloat({min: 1.00, max: 10000.00}).withMessage('Minimum deposit amount is 1.00z and the maximum amount is 10,000.00z'),
+    accountValidationRules,
+    body('deposit').notEmpty().isFloat({min: 1.00, max: maxSingleAmount}).withMessage('Minimum deposit amount is 1.00z and the maximum amount is 10,000.00z'),
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Update existing account`);
@@ -296,25 +328,37 @@ exports.bank_accounts_withdraw_put = [
     }),
 ];
 
-// Delete account
-exports.bank_accounts_remove_delete = asyncHandler(async (req: Request, res: Response) => {
+// Delete bank account
+exports.bank_accounts_remove_delete = [
+    accountValidationRules,
 
-    const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
+    asyncHandler(async (req: Request, res: Response) => {
 
-    if (!accountOwner) {
-        return res.status(422).send('User not found: Unable to complete request.');
+        const errors = validationResult(req);
         
-    } else if( !accountOwner.is_active ) {
-        console.log('Account is not active');
-        return res.status(403).send('This account is not active: Unable to complete requeest.');
-    }
+        if (!errors.isEmpty()) {
+            console.log(`Error: invalid data sent`);
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-    const index = bankAccounts.findIndex((t) => t.id === parseInt(req.params.id));
+        const accountOwner = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
-    if (index === -1) {
-        res.status(404).send('account not found');
-    } else {
-        bankAccounts.splice(index, 1);
-        res.status(204).send();
-    }
-});
+        if (!accountOwner) {
+            console.log('User account not found');
+            return res.status(422).send('User not found: Unable to complete request.');
+            
+        } else if( !accountOwner.is_active ) {
+            console.log('User account is not active');
+            return res.status(403).send('This account is not active: Unable to complete requeest.');
+        }
+
+        const index = bankAccounts.findIndex((t) => t.id === parseInt(req.params.id));
+
+        if (index === -1) {
+            res.status(404).send('account not found');
+        } else {
+            bankAccounts.splice(index, 1);
+            res.status(204).send();
+        }
+    }),
+];
