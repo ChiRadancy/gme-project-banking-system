@@ -110,7 +110,7 @@ exports.bank_accounts_detail_get = asyncHandler(async (req: Request, res: Respon
     }
 });
 
-// Update an existing account
+// Update an existing bank account
 exports.bank_accounts_update_put = [
     accountValidationRules,
     
