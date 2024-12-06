@@ -7,7 +7,10 @@ import { populateDemoBankAccounts } from './demo-functions/demo-bank-accounts';
 const asyncHandler = require("express-async-handler");
 let bankAccounts: BankAccount[] = [];
 
-// Rules for modifying existing bank accounts
+// Maximum amount a user can make in a single transaction transaction
+const maxSingleAmount = 10_000.00;
+
+// Validation rules for bank accounts
 const accountValidationRules = [
     param('user_id').notEmpty().isInt().withMessage('Not a valid user id'),
     body('account_name').notEmpty().withMessage('Account name is required'),
