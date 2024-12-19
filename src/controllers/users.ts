@@ -106,18 +106,29 @@ exports.users_update_put = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // Delete User
-exports.users_remove_delete = asyncHandler(async (req: Request, res: Response) => {
-    console.log(`Delete this user account.`);
-    console.log(`Method: DELETE.`);
+exports.users_remove_delete = [
+    userValidationRules,
 
-    const index = usersList.findIndex((u) => u.id === parseInt(req.params.user_id));
+    asyncHandler(async (req: Request, res: Response) => {
+        console.log(`Delete this user account.`);
+        console.log(`Method: DELETE.`);
 
-    if (index === -1) {
-        console.log('User account not found.');
-        res.status(404).send('User not found.');
-    } else {
-        const removedUser = usersList.splice(index, 1);
-        console.log(`User account removed: ${removedUser}.`);
-        res.status(204).send();
-    }
-});
+        const errors = validationResult(req);
+        
+        if (!errors.isEmpty()) {
+            console.log(`Error: invalid data sent.`);
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const index = usersList.findIndex((u) => u.id === parseInt(req.params.user_id));
+
+        if (index === -1) {
+            console.log('User account not found.');
+            res.status(404).send('User not found.');
+        } else {
+            const removedUser = usersList.splice(index, 1);
+            console.log(`User account removed: ${removedUser}.`);
+            res.status(204).send();
+        }
+    }),
+];
