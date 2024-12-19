@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+import { param, body, validationResult } from 'express-validator';
 import { User } from '../models/users';
 import { populateDemoUsers } from './demo-functions/demo-users';
 
@@ -7,15 +7,16 @@ const asyncHandler = require("express-async-handler");
 export let usersList: User[] = [];
 
 const userValidationRules = [
-    body('user_name').notEmpty().withMessage('User name is required.'),
-    body('first_name').notEmpty().withMessage('First name is required.'),
-    body('family_name').notEmpty().withMessage('Family name is required.'),
-    body('is_active').optional().isBoolean().withMessage('Is active must be set to True or False.'),
+    param('user_id').notEmpty().isInt({min: 0}).withMessage('Not a valid user id.'),
 ];
 
 // Create a user account
 exports.users_create_post = [
-    userValidationRules, 
+    userValidationRules,
+    body('user_name').notEmpty().withMessage('User name is required.'),
+    body('first_name').notEmpty().withMessage('First name is required.'),
+    body('family_name').notEmpty().withMessage('Family name is required.'),
+    body('is_active').optional().isBoolean().withMessage('Is active must be set to True or False.'),
     
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Create new user account.`);
