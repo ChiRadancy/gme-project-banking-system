@@ -20,6 +20,11 @@ These are rules and decisions that are either not specified by or are slight cha
 
 - Currency will be in fictional "Zeny" - denoted with "z" at the end of the currency value, i.e. 100z.
 
+### Repository
+The repository for this project can be found here: https://github.com/ChiRadancy/gme-project-banking-system
+
+Usually branches would be deleted once merged into main however, they have been kept to show the focus arc of the commits. It'll be easier to compare the different stages of work with branches in my opinion.
+
 ## Additional features:
 The following features could be implemented after the bare minimum has been completed.
 
