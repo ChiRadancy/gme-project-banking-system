@@ -76,34 +76,44 @@ exports.users_detail_get = asyncHandler(async (req: Request, res: Response) => {
 });
 
 // Update an existing user
-exports.users_update_put = asyncHandler(async (req: Request, res: Response) => {
-    console.log(`Make updates to an existing user account.`);
-    console.log(`Method: PUT.`);
-    const errors = validationResult(req);
+exports.users_update_put = [
+    // Validation rules for updating an existing user account
+    userValidationRules,
+    body('user_name').notEmpty().withMessage('User name is required.'),
+    body('first_name').notEmpty().withMessage('First name is required.'),
+    body('family_name').notEmpty().withMessage('Family name is required.'),
+    body('is_active').optional().isBoolean().withMessage('Is active must be set to True or False.'),
 
-    if (!errors.isEmpty()) {
-        console.log(`Error: invalid data sent.`);
-        return res.status(400).json({ errors: errors.array() });
-    }
+    asyncHandler(async (req: Request, res: Response) => {
+        console.log(`Make updates to an existing user account.`);
+        console.log(`Method: PUT.`);
 
-    const user = usersList.find((u) => u.id === parseInt(req.params.user_id));
+        const errors = validationResult(req);
 
-    if (!user) {
-        console.log('User account not found.');
-        res.status(404).send('user not found.');
-    } else {
-        const isUserActive = req.body.is_active.length !== 0 ? req.body.is_active : user.is_active;
+        if (!errors.isEmpty()) {
+            console.log(`Error: invalid data sent.`);
+            return res.status(400).json({ errors: errors.array() });
+        }
 
-        user.user_name = req.body.user_name || user.user_name;
-        user.first_name = req.body.first_name || user.first_name;
-        user.family_name = req.body.family_name || user.family_name;
-        user.is_active = isUserActive;
+        const user = usersList.find((u) => u.id === parseInt(req.params.user_id));
 
-        console.log(`New user account details: ${user}.`);
-        res.json(user);
-    }
+        if (!user) {
+            console.log('User account not found.');
+            res.status(404).send('user not found.');
+        } else {
+            const isUserActive = req.body.is_active.length !== 0 ? req.body.is_active : user.is_active;
 
-});
+            user.user_name = req.body.user_name || user.user_name;
+            user.first_name = req.body.first_name || user.first_name;
+            user.family_name = req.body.family_name || user.family_name;
+            user.is_active = isUserActive;
+
+            console.log(`New user account details: ${user}.`);
+            res.json(user);
+        }
+
+    }),
+];
 
 // Delete User
 exports.users_remove_delete = [
