@@ -12,16 +12,16 @@ const maxSingleAmount = 10_000.00;
 
 // Validation rules for bank accounts
 const accountValidationRules = [
-    param('user_id').notEmpty().isInt({min: 0}).withMessage('Not a valid user id.'),
+    param('user_id').notEmpty().isInt({min: 0}).toInt().withMessage('Not a valid user id.'),
     param('id').isInt({min: 0}).withMessage('Not a valid bank account id.'),
 ];
 
 // Create a bank account
 exports.bank_accounts_create_post = [
     // Validation rules for Bank Account creation
-    accountValidationRules,
-    body('account_name').notEmpty().withMessage('Account name is required.'),
-    body('description').notEmpty().withMessage('Description is required.'),
+    param('user_id').notEmpty().isInt({min: 0}).toInt().withMessage('Not a valid user id.'),
+    body('account_name').notEmpty().escape().withMessage('Account name is required.'),
+    body('description').notEmpty().escape().withMessage('Description is required.'),
     body('balance').notEmpty().isFloat({min: 100.00, max: maxSingleAmount}).withMessage('Balance must be a minimum 100.00z and a maximum of 10,000.00z.'),
 
     asyncHandler(async (req: Request, res: Response) => {
@@ -84,7 +84,7 @@ exports.bank_accounts_demo_list_get = asyncHandler(async (req: Request, res: Res
 // Get all bank accounts tied to single user
 exports.bank_accounts_list_get = [
     // Only need to validate the User ID
-    param('user_id').notEmpty().isInt({min: 0}).withMessage('Not a valid user id.'),
+    param('user_id').notEmpty().isInt({min: 0}).toInt().withMessage('Not a valid user id.'),
 
     asyncHandler(async (req: Request, res: Response) => {
         console.log(`Get all account.`);
@@ -154,8 +154,8 @@ exports.bank_accounts_detail_get = [
 exports.bank_accounts_update_put = [
     // Validation rules for updating an existing account
     accountValidationRules,
-    body('account_name').notEmpty().withMessage('Account name is required.'),
-    body('description').notEmpty().withMessage('Description is required.'),
+    body('account_name').notEmpty().escape().withMessage('Account name is required.'),
+    body('description').notEmpty().escape().withMessage('Description is required.'),
 
     // Maximum amount removed because account could've accummulated a balance higher than allowed single transaction amount.
     body('balance').notEmpty().isFloat({min: 100.00}).withMessage('Balance must be a minimum 100.00z.'),
